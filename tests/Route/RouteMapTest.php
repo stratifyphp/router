@@ -98,6 +98,7 @@ class RouteMapTest extends \PHPUnit_Framework_TestCase
 
     private function getFirstRoute() : Route
     {
-        return reset($this->map->getRoutes());
+        $routes = $this->map->getRoutes();
+        return reset($routes);
     }
 }
