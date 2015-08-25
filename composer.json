@@ -1,0 +1,29 @@
+{
+    "name": "stratify/router",
+    "license": "MIT",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Stratify\\Router\\": "src/"
+        },
+        "files": [
+            "src/functions.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Stratify\\Router\\Test\\": "tests/"
+        }
+    },
+    "require": {
+        "psr/http-message": "^1.0",
+        "stratify/http": "dev-master@dev",
+        "php-di/invoker": "^1.0",
+        "aura/router": "^3.0@beta"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^5.0@dev"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
