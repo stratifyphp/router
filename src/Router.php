@@ -78,16 +78,18 @@ class Router
         if ($route === false) {
             $failedRoute = $matcher->getFailedRoute();
 
-            // which matching rule failed?
-            switch ($failedRoute->failedRule) {
-                case 'Aura\Router\Rule\Allows':
-                    // 405 Method not allowed
-                    throw new HttpMethodNotAllowed($failedRoute->allows);
-                    break;
-                default:
-                    // Call the next middleware
-                    return $next($request, $response);
+            if ($failedRoute) {
+                // which matching rule failed?
+                switch ($failedRoute->failedRule) {
+                    case 'Aura\Router\Rule\Allows':
+                        // 405 Method not allowed
+                        throw new HttpMethodNotAllowed($failedRoute->allows);
+                        break;
+                }
             }
+
+            // Call the next middleware
+            return $next($request, $response);
         }
 
         foreach ($route->attributes as $key => $val) {
