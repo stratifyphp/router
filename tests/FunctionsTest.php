@@ -2,7 +2,7 @@
 
 namespace Stratify\Router\Test;
 
-use Aura\Router\Route;
+use function Stratify\Router\route;
 
 class FunctionsTest extends \PHPUnit_Framework_TestCase
 {
@@ -20,12 +20,12 @@ class FunctionsTest extends \PHPUnit_Framework_TestCase
      */
     public function route_returns_a_route_builder()
     {
-        $builder = \Stratify\Router\route('/', 'controller');
+        $builder = route('controller', 'home');
 
-        /** @var Route $route */
-        $route = $builder->getRoute();
+        $route = $builder->getRoute('/');
 
         $this->assertEquals('/', $route->path);
         $this->assertEquals('controller', $route->handler);
+        $this->assertEquals('home', $route->name);
     }
 }

@@ -69,7 +69,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     public function accepts_routes_as_array()
     {
         $routes = [
-            'home' => \Stratify\Router\route('/', 'controller'),
+            '/' => \Stratify\Router\route('controller'),
         ];
 
         $invoker = $this->getMockForAbstractClass(InvokerInterface::class);

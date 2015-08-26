@@ -81,7 +81,8 @@ class RouteMap implements RouteProvider
             throw new \Exception('The router has already been initialized to use the routes, you cannot define new routes as they would be ignored by the router.');
         }
 
-        $route = new RouteBuilder($path, $controller, $httpMethods);
+        $route = new RouteBuilder($controller, $path);
+        $route->methods($httpMethods);
         $this->routeBuilders[] = $route;
         return $route;
     }

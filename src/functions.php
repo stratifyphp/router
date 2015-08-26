@@ -5,8 +5,8 @@ namespace Stratify\Router;
 use Stratify\Router\Route\RouteBuilder;
 
 if (! function_exists('Stratify\Router\route')) {
-    function route(string $path, $controller) : RouteBuilder
+    function route($controller, string $name = null) : RouteBuilder
     {
-        return new RouteBuilder($path, $controller);
+        return new RouteBuilder($controller, null, $name);
     }
 }

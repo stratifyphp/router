@@ -26,12 +26,8 @@ class RouteArray implements RouteProvider
     {
         $routes = [];
 
-        foreach ($this->routes as $name => $routeBuilder) {
-            $route = $routeBuilder->getRoute();
-            if (is_string($name)) {
-                $route->name($name);
-            }
-            $routes[] = $route;
+        foreach ($this->routes as $path => $routeBuilder) {
+            $routes[] = $routeBuilder->getRoute($path);
         }
 
         return $routes;

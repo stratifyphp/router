@@ -16,23 +16,16 @@ class RouteBuilder
      */
     private $route;
 
-    public function __construct(string $path, $controller, array $httpMethods = [])
+    public function __construct($controller, string $path = null, string $name = null)
     {
         $this->route = new Route();
-        $this->route->path($path);
         $this->route->handler($controller);
-        if ($httpMethods) {
-            $this->methods($httpMethods);
+        if ($path !== null) {
+            $this->route->path($path);
         }
-    }
-
-    /**
-     * Set a route name which can be used to generate URLs later.
-     */
-    public function name(string $name) : RouteBuilder
-    {
-        $this->route->name($name);
-        return $this;
+        if ($name !== null) {
+            $this->route->name($name);
+        }
     }
 
     /**
@@ -119,8 +112,12 @@ class RouteBuilder
         return $this;
     }
 
-    public function getRoute() : Route
+    public function getRoute(string $path = null) : Route
     {
+        if ($path !== null) {
+            $this->route->path($path);
+        }
+
         return $this->route;
     }
 }
