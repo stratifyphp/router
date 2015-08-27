@@ -23,4 +23,21 @@ class RouteArrayTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('/', $route->path);
         $this->assertEquals('controller', $route->handler);
     }
+
+    /**
+     * @test
+     */
+    public function accepts_callable_as_route()
+    {
+        $controller = function () {};
+
+        $provider = new RouteArray([
+            '/' => $controller,
+        ]);
+        $routes = $provider->getRoutes();
+
+        $route = $routes[0];
+        $this->assertEquals('/', $route->path);
+        $this->assertSame($controller, $route->handler);
+    }
 }
