@@ -112,12 +112,8 @@ class RouteBuilder
         return $this;
     }
 
-    public function getRoute(string $path = null) : Route
+    public function getRoute() : Route
     {
-        if ($path !== null) {
-            $this->route->path($path);
-        }
-
         return $this->route;
     }
 }

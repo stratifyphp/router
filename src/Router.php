@@ -2,14 +2,13 @@
 
 namespace Stratify\Router;
 
+use Aura\Router\Route;
 use Aura\Router\RouterContainer;
 use Invoker\InvokerInterface;
 use Stratify\Http\Exception\HttpMethodNotAllowed;
 use Stratify\Http\Exception\HttpNotFound;
 use Stratify\Router\Invoker\SimpleInvoker;
-use Stratify\Router\Route\RouteArray;
 use Stratify\Router\Route\RouteBuilder;
-use Stratify\Router\Route\RouteProvider;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -37,28 +36,15 @@ class Router
     private $routerContainer;
 
     /**
-     * @var RouteProvider|null
-     */
-    private $routes;
-
-    /**
      * @var UrlGenerator|null
      */
     private $urlGenerator;
 
-    public function __construct(RouteProvider $routes = null, InvokerInterface $invoker = null)
+    public function __construct(array $routes, InvokerInterface $invoker = null)
     {
         $this->invoker = $invoker ?: new SimpleInvoker();
         $this->routerContainer = new RouterContainer;
-        $this->routes = $routes;
-    }
-
-    /**
-     * Create a new router with the routes provided.
-     */
-    public static function fromArray(array $routes, InvokerInterface $invoker = null) : Router
-    {
-        return new self(new RouteArray($routes), $invoker);
+        $this->addRoutes($routes);
     }
 
     /**
@@ -70,8 +56,6 @@ class Router
         callable $next
     ) : ResponseInterface
     {
-        $this->init();
-
         $matcher = $this->routerContainer->getMatcher();
 
         $route = $matcher->match($request);
@@ -103,7 +87,6 @@ class Router
     public function getUrlGenerator() : UrlGenerator
     {
         if (! $this->urlGenerator) {
-            $this->init();
             $this->urlGenerator = new UrlGenerator($this->routerContainer->getGenerator());
         }
 
@@ -144,27 +127,17 @@ class Router
     {
         $map = $this->routerContainer->getMap();
 
-        foreach ($routes as $index => $route) {
+        foreach ($routes as $path => $route) {
             if ($route instanceof RouteBuilder) {
-                // Indexed by route name
-                if (is_string($index)) {
-                    $route->name($index);
-                }
-
                 $route = $route->getRoute();
+            } else {
+                $controller = $route;
+                $route = new Route();
+                $route->handler($controller);
             }
 
+            $route->path($path);
             $map->addRoute($route);
-        }
-    }
-
-    private function init()
-    {
-        if ($this->routes) {
-            // Add these lazily since routes can be registered between init and run
-            $this->addRoutes($this->routes->getRoutes());
-            // Clear it to avoid adding routes twice
-            $this->routes = null;
         }
     }
 }

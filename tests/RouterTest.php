@@ -5,27 +5,26 @@ namespace Stratify\Router\Test;
 use Invoker\InvokerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Stratify\Router\Route\RouteMap;
 use Stratify\Router\Router;
 use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequest;
+use function Stratify\Router\route;
 
 class RouterTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @test
      */
-    public function routes_request_to_handler()
+    public function routes_request_to_controller()
     {
-        $map = new RouteMap();
-
         $calls = 0;
-        $map->get('/', function () use (&$calls) {
-            $calls++;
-            return new Response;
-        });
+        $router = new Router([
+            '/' => function () use (&$calls) {
+                $calls++;
+                return new Response;
+            },
+        ]);
 
-        $router = new Router($map);
         $router->__invoke($this->request('/'), new Response, $this->next());
 
         $this->assertEquals(1, $calls);
@@ -41,7 +40,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             return $response;
         };
 
-        $router = new Router();
+        $router = new Router([]);
         $response = $router->__invoke($this->request('/'), new Response, $next);
 
         $this->assertEquals('Hello world!', $response->getBody()->__toString());
@@ -52,12 +51,13 @@ class RouterTest extends \PHPUnit_Framework_TestCase
      */
     public function calls_controller_with_middleware_parameters()
     {
-        $map = new RouteMap();
-        $map->get('/', function (ServerRequestInterface $request, ResponseInterface $response, callable $next) {
-            $response->getBody()->write('Hello world!');
-            return $response;
-        });
-        $router = new Router($map);
+        $router = new Router([
+            '/' => route(function (ServerRequestInterface $request, ResponseInterface $response, callable $next) {
+                $response->getBody()->write('Hello world!');
+                return $response;
+            })->method('GET'),
+        ]);
+
         $response = $router->__invoke($this->request('/'), new Response, $this->next());
 
         $this->assertEquals('Hello world!', $response->getBody()->__toString());
@@ -66,10 +66,10 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function accepts_routes_in_array_with_helper()
+    public function invokes_controller_using_invoker()
     {
         $routes = [
-            '/' => \Stratify\Router\route('controller'),
+            '/' => route('controller'),
         ];
 
         $invoker = $this->getMockForAbstractClass(InvokerInterface::class);
@@ -79,7 +79,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             ->with('controller')
             ->willReturn(new Response);
 
-        $router = Router::fromArray($routes, $invoker);
+        $router = new Router($routes, $invoker);
         $router->__invoke($this->request('/'), new Response, $this->next());
     }
 
@@ -99,7 +99,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             ->with('controller')
             ->willReturn(new Response);
 
-        $router = Router::fromArray($routes, $invoker);
+        $router = new Router($routes, $invoker);
         $router->__invoke($this->request('/'), new Response, $this->next());
     }
 
