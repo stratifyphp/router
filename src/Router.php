@@ -5,12 +5,13 @@ namespace Stratify\Router;
 use Aura\Router\RouterContainer;
 use Invoker\InvokerInterface;
 use Stratify\Http\Exception\HttpMethodNotAllowed;
+use Stratify\Http\Exception\HttpNotFound;
 use Stratify\Router\Invoker\SimpleInvoker;
 use Stratify\Router\Route\RouteArray;
 use Stratify\Router\Route\RouteBuilder;
+use Stratify\Router\Route\RouteProvider;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Stratify\Router\Route\RouteProvider;
 
 /**
  * The router is implemented as a middleware because:
@@ -119,6 +120,9 @@ class Router
         $parameters = $attributes;
         $parameters['request'] = $request;
         $parameters['response'] = $response;
+        $parameters['next'] = function () {
+            throw new HttpNotFound;
+        };
 
         $newResponse = $this->invoker->call($handler, $parameters);
 

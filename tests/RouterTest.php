@@ -50,10 +50,10 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function calls_controller_with_request_and_response()
+    public function calls_controller_with_middleware_parameters()
     {
         $map = new RouteMap();
-        $map->get('/', function (ServerRequestInterface $request, ResponseInterface $response) {
+        $map->get('/', function (ServerRequestInterface $request, ResponseInterface $response, callable $next) {
             $response->getBody()->write('Hello world!');
             return $response;
         });

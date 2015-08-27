@@ -22,15 +22,17 @@ class SimpleInvokerTest extends \PHPUnit_Framework_TestCase
 
             $args = func_get_args();
 
-            $this->assertCount(2, $args);
+            $this->assertCount(3, $args);
             $this->assertSame($request, $args[0]);
             $this->assertSame($response, $args[1]);
+            $this->assertTrue(is_callable($args[2]));
         };
 
         $invoker = new SimpleInvoker;
         $invoker->call($callable, [
             'request'  => $request,
             'response' => $response,
+            'next'     => function () {},
             'foo'      => 'bar', // extra param that will be ignored
         ]);
 

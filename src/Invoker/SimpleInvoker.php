@@ -24,7 +24,8 @@ class SimpleInvoker implements InvokerInterface
 
         $request = $parameters['request'];
         $response = $parameters['response'];
+        $next = $parameters['next'];
 
-        return call_user_func($callable, $request, $response);
+        return call_user_func($callable, $request, $response, $next);
     }
 }
