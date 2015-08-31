@@ -18,7 +18,6 @@
     "require": {
         "psr/http-message": "^1.0",
         "stratify/http": "dev-master@dev",
-        "php-di/invoker": "^1.0",
         "aura/router": "^3.0@beta"
     },
     "require-dev": {

@@ -7,7 +7,7 @@ use Aura\Router\RouterContainer;
 use Invoker\InvokerInterface;
 use Stratify\Http\Exception\HttpMethodNotAllowed;
 use Stratify\Http\Exception\HttpNotFound;
-use Stratify\Router\Invoker\SimpleInvoker;
+use Stratify\Http\Middleware\Invoker\SimpleInvoker;
 use Stratify\Router\Route\RouteBuilder;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
