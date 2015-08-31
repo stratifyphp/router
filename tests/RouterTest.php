@@ -2,9 +2,9 @@
 
 namespace Stratify\Router\Test;
 
-use Invoker\InvokerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Stratify\Http\Middleware\Invoker\MiddlewareInvoker;
 use Stratify\Router\Router;
 use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequest;
@@ -72,10 +72,10 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             '/' => route('controller'),
         ];
 
-        $invoker = $this->getMockForAbstractClass(InvokerInterface::class);
+        $invoker = $this->getMockForAbstractClass(MiddlewareInvoker::class);
         // Expect controller is invoked
         $invoker->expects($this->once())
-            ->method('call')
+            ->method('invoke')
             ->with('controller')
             ->willReturn(new Response);
 
@@ -92,10 +92,10 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             '/' => 'controller',
         ];
 
-        $invoker = $this->getMockForAbstractClass(InvokerInterface::class);
+        $invoker = $this->getMockForAbstractClass(MiddlewareInvoker::class);
         // Expect controller is invoked
         $invoker->expects($this->once())
-            ->method('call')
+            ->method('invoke')
             ->with('controller')
             ->willReturn(new Response);
 

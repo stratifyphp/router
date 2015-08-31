@@ -4,9 +4,9 @@ namespace Stratify\Router;
 
 use Aura\Router\Route;
 use Aura\Router\RouterContainer;
-use Invoker\InvokerInterface;
 use Stratify\Http\Exception\HttpMethodNotAllowed;
 use Stratify\Http\Exception\HttpNotFound;
+use Stratify\Http\Middleware\Invoker\MiddlewareInvoker;
 use Stratify\Http\Middleware\Invoker\SimpleInvoker;
 use Stratify\Router\Route\RouteBuilder;
 use Psr\Http\Message\ResponseInterface;
@@ -26,7 +26,7 @@ use Psr\Http\Message\ServerRequestInterface;
 class Router
 {
     /**
-     * @var InvokerInterface
+     * @var MiddlewareInvoker
      */
     private $invoker;
 
@@ -40,7 +40,7 @@ class Router
      */
     private $urlGenerator;
 
-    public function __construct(array $routes, InvokerInterface $invoker = null)
+    public function __construct(array $routes, MiddlewareInvoker $invoker = null)
     {
         $this->invoker = $invoker ?: new SimpleInvoker();
         $this->routerContainer = new RouterContainer;
@@ -81,7 +81,7 @@ class Router
             $request = $request->withAttribute($key, $val);
         }
 
-        return $this->dispatch($route->handler, $request, $response, $route->attributes);
+        return $this->dispatch($route->handler, $request, $response);
     }
 
     public function getUrlGenerator() : UrlGenerator
@@ -96,20 +96,17 @@ class Router
     private function dispatch(
         $handler,
         ServerRequestInterface $request,
-        ResponseInterface $response,
-        array $attributes
+        ResponseInterface $response
     ) : ResponseInterface
     {
-        $parameters = $attributes;
-        $parameters['request'] = $request;
-        $parameters['response'] = $response;
-        $parameters['next'] = function () {
+        $next = function () {
             throw new HttpNotFound;
         };
 
-        $newResponse = $this->invoker->call($handler, $parameters);
+        $newResponse = $this->invoker->invoke($handler, $request, $response, $next);
 
         if (is_string($newResponse)) {
+            // Allow direct string response
             $response->getBody()->write($newResponse);
             $newResponse = $response;
         } elseif (! $newResponse instanceof ResponseInterface) {
