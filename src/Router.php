@@ -133,6 +133,10 @@ class Router
                 $route->handler($controller);
             }
 
+            if (!$route->allows) {
+                $route->allows('GET');
+            }
+
             $route->path($path);
             $map->addRoute($route);
         }

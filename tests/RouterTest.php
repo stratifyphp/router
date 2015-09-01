@@ -4,6 +4,7 @@ namespace Stratify\Router\Test;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Stratify\Http\Exception\HttpMethodNotAllowed;
 use Stratify\Http\Middleware\Invoker\MiddlewareInvoker;
 use Stratify\Router\Router;
 use Zend\Diactoros\Response;
@@ -55,7 +56,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             '/' => route(function (ServerRequestInterface $request, ResponseInterface $response, callable $next) {
                 $response->getBody()->write('Hello world!');
                 return $response;
-            })->method('GET'),
+            }),
         ]);
 
         $response = $router->__invoke($this->request('/'), new Response, $this->next());
@@ -103,9 +104,35 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $router->__invoke($this->request('/'), new Response, $this->next());
     }
 
-    private function request($uri)
+    /**
+     * @test
+     */
+    public function routes_match_http_get_by_default_only()
     {
-        return new ServerRequest([], [], $uri, 'GET');
+        $router = new Router([
+            '/' => function ($request, ResponseInterface $response, $next) {
+                $response->getBody()->write('Hello world!');
+                return $response;
+            },
+        ]);
+
+        // Match GET
+        $response = $router->__invoke($this->request('/', 'GET'), new Response, $this->next());
+        $this->assertEquals('Hello world!', $response->getBody()->__toString());
+        // Don't match any other HTTP method
+        $methods = ['POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS', 'TRACE'];
+        foreach ($methods as $method) {
+            try {
+                $router->__invoke($this->request('/', $method), new Response, $this->next());
+                $this->fail('Expected exception HttpMethodNotAllowed');
+            } catch (HttpMethodNotAllowed $e) {
+            }
+        }
+    }
+
+    private function request($uri, $method = 'GET')
+    {
+        return new ServerRequest([], [], $uri, $method);
     }
 
     private function next()
