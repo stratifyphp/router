@@ -29,7 +29,11 @@ class RouteBuilder
     }
 
     /**
-     * Set the pattern that a path parameter must match.
+     * Set the pattern (regular expression) that a path parameter must match.
+     *
+     * Example for "/article/{id}":
+     *
+     *     ->pattern('id', '\d+')
      */
     public function pattern(string $parameter, string $pattern) : RouteBuilder
     {
@@ -40,44 +44,40 @@ class RouteBuilder
     }
 
     /**
-     * Set HTTP method accepted for this route.
-     */
-    public function method(string $method) : RouteBuilder
-    {
-        $this->route->allows([$method]);
-        return $this;
-    }
-
-    /**
      * Set HTTP methods accepted for this route.
+     *
+     * Example:
+     *
+     *     ->method('GET')
+     *     ->method('GET', 'POST')
      */
-    public function methods(array $methods) : RouteBuilder
+    public function method(string ...$methods) : RouteBuilder
     {
         $this->route->allows($methods);
         return $this;
     }
 
     /**
-     * Set default values for request attributes.
+     * Mark a path parameter as optional.
+     *
+     * - sets the following pattern for the parameter: `([^/]+)?`
+     * - sets the provided default value
+     *
+     * **Warning:** if you set a custom pattern for the parameter, it will be replaced
+     * to be `([^/]+)?`.
      *
      * Example for "/blog/article.{format}":
      *
-     *     ->defaults([
-     *         'format' => 'json'
-     *     ])
+     *     ->optional('format', 'json')
      */
-    public function defaults(array $defaults) : RouteBuilder
+    public function optional(string $parameter, string $defaultValue) : RouteBuilder
     {
-        $this->route->defaults($defaults);
-        return $this;
-    }
-
-    /**
-     * Add a requirement on the HTTP host of the request.
-     */
-    public function host(string $host) : RouteBuilder
-    {
-        $this->route->host($host);
+        $this->route->tokens([
+            $parameter => '([^/]+)?',
+        ]);
+        $this->route->defaults([
+            $parameter => $defaultValue,
+        ]);
         return $this;
     }
 
@@ -86,29 +86,14 @@ class RouteBuilder
      *
      * If set to true, the request must be an HTTPS request;
      * if false, it must *not* be HTTPS.
+     *
+     * Example:
+     *
+     *     ->secure()
      */
     public function secure(bool $secure = true) : RouteBuilder
     {
         $this->route->secure($secure);
-        return $this;
-    }
-
-    /**
-     * Set a wildcard parameter that will match any extra paths in the request URI.
-     *
-     * Example for route with path `/buy`:
-     *
-     *     ->wildcard('categories')
-     *
-     * For URI `/buy/food/frozen/pizza` the `categories` attribute will have value:
-     *
-     *     ['food', 'frozen', 'pizza']
-     *
-     * For URI `/buy` the `categories` attribute will be an empty array.
-     */
-    public function wildcard(string $wildcard) : RouteBuilder
-    {
-        $this->route->wildcard($wildcard);
         return $this;
     }
 
