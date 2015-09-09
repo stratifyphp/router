@@ -2,6 +2,7 @@
 
 namespace Stratify\Router\Test;
 
+use function Stratify\Router\resource;
 use function Stratify\Router\route;
 
 class FunctionsTest extends \PHPUnit_Framework_TestCase
@@ -26,5 +27,24 @@ class FunctionsTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals('controller', $route->handler);
         $this->assertEquals('home', $route->name);
+    }
+
+    /**
+     * @test
+     */
+    public function resource_returns_a_route_builder()
+    {
+        $builder = resource([
+            'get'  => 'get-controller',
+            'post' => 'post-controller',
+        ]);
+
+        $routes = $builder->getRoutes();
+
+        $this->assertEquals('get-controller', $routes[0]->handler);
+        $this->assertEquals(['GET'], $routes[0]->allows);
+
+        $this->assertEquals('post-controller', $routes[1]->handler);
+        $this->assertEquals(['POST'], $routes[1]->allows);
     }
 }
