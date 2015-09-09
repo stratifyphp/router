@@ -41,16 +41,16 @@ class RestRouter implements Middleware
         $routes = [];
 
         foreach ($resources as $path => $controller) {
-            $itemPath = $path . '/{id}';
+            $routes[$path] = resource([
+                'get'  => [$controller, 'index'],
+                'post' => [$controller, 'post'],
+            ]);
 
-            // GET list
-            $routes[$path] = [$controller, 'index'];
-
-            $methods = ['get', 'post', 'put', 'delete'];
-            foreach ($methods as $method) {
-                $routes[$itemPath] = route([$controller, $method])
-                    ->method(strtoupper($method));
-            }
+            $routes[$path . '/{id}'] = resource([
+                'get'    => [$controller, 'get'],
+                'put'    => [$controller, 'put'],
+                'delete' => [$controller, 'delete'],
+            ]);
         }
 
         return $routes;

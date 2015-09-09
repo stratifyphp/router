@@ -125,21 +125,37 @@ class Router implements Middleware
     {
         $map = $this->routerContainer->getMap();
 
+        $newRoutes = [];
         foreach ($routes as $path => $route) {
+            if (! is_string($path)) {
+                throw new \Exception('The routes array must be indexed by URI paths, got an integer instead');
+            }
+
             if ($route instanceof RouteBuilder) {
-                $route = $route->getRoute();
+                $subRoutes = $route->getRoutes();
+                foreach ($subRoutes as $subRoute) {
+                    $newRoutes[] = $this->prepareRoute($subRoute, $path);
+                }
             } else {
                 $controller = $route;
                 $route = new Route();
                 $route->handler($controller);
-            }
 
-            if (!$route->allows) {
-                $route->allows('GET');
+                $newRoutes[] = $this->prepareRoute($route, $path);
             }
-
-            $route->path($path);
-            $map->addRoute($route);
         }
+
+        $map->setRoutes($newRoutes);
+    }
+
+    private function prepareRoute(Route $route, string $path) : Route
+    {
+        if (!$route->allows) {
+            $route->allows('GET');
+        }
+
+        $route->path($path);
+
+        return $route;
     }
 }

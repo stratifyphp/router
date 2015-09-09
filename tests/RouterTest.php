@@ -8,7 +8,9 @@ use Stratify\Http\Exception\HttpMethodNotAllowed;
 use Stratify\Http\Middleware\Invoker\MiddlewareInvoker;
 use Stratify\Router\Router;
 use Zend\Diactoros\Response;
+use Zend\Diactoros\Response\HtmlResponse;
 use Zend\Diactoros\ServerRequest;
+use function Stratify\Router\resource;
 use function Stratify\Router\route;
 
 class RouterTest extends \PHPUnit_Framework_TestCase
@@ -128,6 +130,29 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             } catch (HttpMethodNotAllowed $e) {
             }
         }
+    }
+
+    /**
+     * @test
+     */
+    public function allows_different_controllers_for_different_http_methods()
+    {
+        $router = new Router([
+            '/' => resource([
+                'get' => function () {
+                    return new HtmlResponse('GET');
+                },
+                'post' => function () {
+                    return new HtmlResponse('POST');
+                },
+            ]),
+        ]);
+
+        $response = $router->__invoke($this->request('/', 'GET'), new Response, $this->next());
+        $this->assertEquals('GET', $response->getBody()->__toString());
+
+        $response = $router->__invoke($this->request('/', 'POST'), new Response, $this->next());
+        $this->assertEquals('POST', $response->getBody()->__toString());
     }
 
     private function request($uri, $method = 'GET')

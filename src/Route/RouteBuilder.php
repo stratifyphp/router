@@ -12,20 +12,40 @@ use Aura\Router\Route;
 class RouteBuilder
 {
     /**
-     * @var Route
+     * @var Route[]
      */
-    private $route;
+    private $routes = [];
 
-    public function __construct($controller, string $path = null, string $name = null)
+    private function __construct(array $routes)
     {
-        $this->route = new Route();
-        $this->route->handler($controller);
+        $this->routes = $routes;
+    }
+
+    public static function singleRoute($controller, string $path = null, string $name = null)
+    {
+        $route = new Route();
+        $route->handler($controller);
         if ($path !== null) {
-            $this->route->path($path);
+            $route->path($path);
         }
         if ($name !== null) {
-            $this->route->name($name);
+            $route->name($name);
         }
+
+        return new static([$route]);
+    }
+
+    public static function multipleRoutes(array $controllers)
+    {
+        $routes = [];
+        foreach ($controllers as $method => $controller) {
+            $route = new Route();
+            $route->handler($controller);
+            $route->allows(strtoupper($method));
+            $routes[] = $route;
+        }
+
+        return new static($routes);
     }
 
     /**
@@ -37,9 +57,11 @@ class RouteBuilder
      */
     public function pattern(string $parameter, string $pattern) : RouteBuilder
     {
-        $this->route->tokens([
-            $parameter => $pattern,
-        ]);
+        foreach ($this->routes as $route) {
+            $route->tokens([
+                $parameter => $pattern,
+            ]);
+        }
         return $this;
     }
 
@@ -53,7 +75,9 @@ class RouteBuilder
      */
     public function method(string ...$methods) : RouteBuilder
     {
-        $this->route->allows($methods);
+        foreach ($this->routes as $route) {
+            $route->allows($methods);
+        }
         return $this;
     }
 
@@ -72,12 +96,14 @@ class RouteBuilder
      */
     public function optional(string $parameter, string $defaultValue) : RouteBuilder
     {
-        $this->route->tokens([
-            $parameter => '([^/]+)?',
-        ]);
-        $this->route->defaults([
-            $parameter => $defaultValue,
-        ]);
+        foreach ($this->routes as $route) {
+            $route->tokens([
+                $parameter => '([^/]+)?',
+            ]);
+            $route->defaults([
+                $parameter => $defaultValue,
+            ]);
+        }
         return $this;
     }
 
@@ -93,12 +119,17 @@ class RouteBuilder
      */
     public function secure(bool $secure = true) : RouteBuilder
     {
-        $this->route->secure($secure);
+        foreach ($this->routes as $route) {
+            $route->secure($secure);
+        }
         return $this;
     }
 
-    public function getRoute() : Route
+    /**
+     * @return Route[]
+     */
+    public function getRoutes() : array
     {
-        return $this->route;
+        return $this->routes;
     }
 }

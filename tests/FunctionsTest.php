@@ -22,7 +22,7 @@ class FunctionsTest extends \PHPUnit_Framework_TestCase
     {
         $builder = route('controller', 'home');
 
-        $route = $builder->getRoute();
+        $route = $builder->getRoutes()[0];
 
         $this->assertEquals('controller', $route->handler);
         $this->assertEquals('home', $route->name);
