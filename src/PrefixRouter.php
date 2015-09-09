@@ -6,13 +6,14 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Stratify\Http\Middleware\Invoker\MiddlewareInvoker;
 use Stratify\Http\Middleware\Invoker\SimpleInvoker;
+use Stratify\Http\Middleware\Middleware;
 
 /**
  * Routes requests by matching prefixes on the URI.
  *
  * @author Matthieu Napoli <matthieu@mnapoli.fr>
  */
-class PrefixRouter
+class PrefixRouter implements Middleware
 {
     /**
      * @var array[]

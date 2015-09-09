@@ -8,6 +8,7 @@ use Stratify\Http\Exception\HttpMethodNotAllowed;
 use Stratify\Http\Exception\HttpNotFound;
 use Stratify\Http\Middleware\Invoker\MiddlewareInvoker;
 use Stratify\Http\Middleware\Invoker\SimpleInvoker;
+use Stratify\Http\Middleware\Middleware;
 use Stratify\Router\Route\RouteBuilder;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -23,7 +24,7 @@ use Psr\Http\Message\ServerRequestInterface;
  *
  * @author Matthieu Napoli <matthieu@mnapoli.fr>
  */
-class Router
+class Router implements Middleware
 {
     /**
      * @var MiddlewareInvoker
