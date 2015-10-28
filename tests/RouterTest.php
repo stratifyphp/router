@@ -155,6 +155,24 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('POST', $response->getBody()->__toString());
     }
 
+    /**
+     * @test
+     */
+    public function supports_anonymous_classes_as_controllers()
+    {
+        $router = new Router([
+            '/' => new class {
+                public function __invoke(ServerRequestInterface $request, ResponseInterface $response, callable $next) {
+                    $response->getBody()->write('Hello world!');
+                    return $response;
+                }
+            },
+        ]);
+
+        $response = $router->__invoke($this->request('/'), new Response, $this->next());
+        $this->assertEquals('Hello world!', $response->getBody()->__toString());
+    }
+
     private function request($uri, $method = 'GET')
     {
         return new ServerRequest([], [], $uri, $method);
