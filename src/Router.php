@@ -67,7 +67,7 @@ class Router implements Middleware
             if ($failedRoute) {
                 // which matching rule failed?
                 switch ($failedRoute->failedRule) {
-                    case 'Aura\Router\Rule\Allows':
+                    case \Aura\Router\Rule\Allows::class:
                         // 405 Method not allowed
                         throw new HttpMethodNotAllowed($failedRoute->allows);
                         break;

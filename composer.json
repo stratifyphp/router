@@ -18,11 +18,9 @@
     "require": {
         "psr/http-message": "^1.0",
         "stratify/http": "~0.1.0",
-        "aura/router": "^3.0@beta"
+        "aura/router": "^3.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^5.0@dev"
-    },
-    "minimum-stability": "dev",
-    "prefer-stable": true
+        "phpunit/phpunit": "^5.1"
+    }
 }
