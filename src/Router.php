@@ -4,11 +4,12 @@ namespace Stratify\Router;
 
 use Aura\Router\Route;
 use Aura\Router\RouterContainer;
+use Interop\Container\ContainerInterface;
 use Stratify\Http\Exception\HttpMethodNotAllowed;
 use Stratify\Http\Exception\HttpNotFound;
 use Stratify\Http\Middleware\Invoker\MiddlewareInvoker;
-use Stratify\Http\Middleware\Invoker\SimpleInvoker;
 use Stratify\Http\Middleware\Middleware;
+use Stratify\Router\Invoker\ControllerInvoker;
 use Stratify\Router\Route\RouteBuilder;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -41,9 +42,9 @@ class Router implements Middleware
      */
     private $urlGenerator;
 
-    public function __construct(array $routes, MiddlewareInvoker $invoker = null)
+    public function __construct(array $routes, ContainerInterface $container = null)
     {
-        $this->invoker = $invoker ?: new SimpleInvoker();
+        $this->invoker = new ControllerInvoker($container);
         $this->routerContainer = new RouterContainer;
         $this->addRoutes($routes);
     }

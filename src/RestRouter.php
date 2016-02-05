@@ -2,9 +2,9 @@
 
 namespace Stratify\Router;
 
+use Interop\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Stratify\Http\Middleware\Invoker\MiddlewareInvoker;
 use Stratify\Http\Middleware\Middleware;
 
 /**
@@ -19,10 +19,10 @@ class RestRouter implements Middleware
      */
     private $router;
 
-    public function __construct(array $resources, MiddlewareInvoker $invoker = null)
+    public function __construct(array $resources, ContainerInterface $container = null)
     {
         $routes = $this->createRoutes($resources);
-        $this->router = new Router($routes, $invoker);
+        $this->router = new Router($routes, $container);
     }
 
     public function __invoke(

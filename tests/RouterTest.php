@@ -2,6 +2,7 @@
 
 namespace Stratify\Router\Test;
 
+use Interop\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Stratify\Http\Exception\HttpMethodNotAllowed;
@@ -75,15 +76,19 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             '/' => route('controller'),
         ];
 
-        $invoker = $this->getMockForAbstractClass(MiddlewareInvoker::class);
-        // Expect controller is invoked
-        $invoker->expects($this->once())
-            ->method('invoke')
+        $container = $this->getMockForAbstractClass(ContainerInterface::class);
+        $container->method('has')->with('controller')->willReturn(true);
+        $container->expects($this->once())
+            ->method('get')
             ->with('controller')
-            ->willReturn(new Response);
+            ->willReturn(function (ServerRequestInterface $request, ResponseInterface $response) {
+                $response->getBody()->write('Hello world!');
+                return $response;
+            });
 
-        $router = new Router($routes, $invoker);
-        $router->__invoke($this->request('/'), new Response, $this->next());
+        $router = new Router($routes, $container);
+        $response = $router->__invoke($this->request('/'), new Response, $this->next());
+        $this->assertEquals('Hello world!', $response->getBody()->__toString());
     }
 
     /**
@@ -95,15 +100,19 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             '/' => 'controller',
         ];
 
-        $invoker = $this->getMockForAbstractClass(MiddlewareInvoker::class);
-        // Expect controller is invoked
-        $invoker->expects($this->once())
-            ->method('invoke')
+        $container = $this->getMockForAbstractClass(ContainerInterface::class);
+        $container->method('has')->with('controller')->willReturn(true);
+        $container->expects($this->once())
+            ->method('get')
             ->with('controller')
-            ->willReturn(new Response);
+            ->willReturn(function (ServerRequestInterface $request, ResponseInterface $response) {
+                $response->getBody()->write('Hello world!');
+                return $response;
+            });
 
-        $router = new Router($routes, $invoker);
-        $router->__invoke($this->request('/'), new Response, $this->next());
+        $router = new Router($routes, $container);
+        $response = $router->__invoke($this->request('/'), new Response, $this->next());
+        $this->assertEquals('Hello world!', $response->getBody()->__toString());
     }
 
     /**
@@ -166,6 +175,21 @@ class RouterTest extends \PHPUnit_Framework_TestCase
                     $response->getBody()->write('Hello world!');
                     return $response;
                 }
+            },
+        ]);
+
+        $response = $router->__invoke($this->request('/'), new Response, $this->next());
+        $this->assertEquals('Hello world!', $response->getBody()->__toString());
+    }
+
+    /**
+     * @test
+     */
+    public function allows_controllers_to_return_string()
+    {
+        $router = new Router([
+            '/' => function () {
+                return 'Hello world!';
             },
         ]);
 
