@@ -36,6 +36,28 @@ class PrefixRouterTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
+    public function takes_the_first_prefix_matching()
+    {
+        $router = new PrefixRouter([
+            '/api'    => function (ServerRequestInterface $request, ResponseInterface $response) {
+                $response->getBody()->write('API');
+                return $response;
+            },
+            '/' => function (ServerRequestInterface $request, ResponseInterface $response) {
+                $response->getBody()->write('Root');
+                return $response;
+            },
+        ]);
+
+        $response = $router->__invoke($this->request('/api/test'), new Response, $this->next());
+        $this->assertEquals('API', $response->getBody()->__toString());
+        $response = $router->__invoke($this->request('/'), new Response, $this->next());
+        $this->assertEquals('Root', $response->getBody()->__toString());
+    }
+
+    /**
+     * @test
+     */
     public function calls_next_middleware_if_no_route_matched()
     {
         $next = function (ServerRequestInterface $request, ResponseInterface $response) {
