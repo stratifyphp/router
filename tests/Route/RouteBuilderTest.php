@@ -3,10 +3,10 @@
 namespace Stratify\Router\Test\Route;
 
 use Psr\Http\Message\ServerRequestInterface;
-use Stratify\Http\Exception\HttpMethodNotAllowed;
 use Stratify\Router\Router;
 use Zend\Diactoros\Response;
 use Zend\Diactoros\Response\HtmlResponse;
+use Zend\Diactoros\Response\TextResponse;
 use Zend\Diactoros\ServerRequest;
 use function Stratify\Router\route;
 
@@ -75,30 +75,25 @@ class RouteBuilderTest extends \PHPUnit_Framework_TestCase
         ];
 
         $router = new Router($routes);
+        $next = function () {
+            return new TextResponse('Not found');
+        };
 
         // Single method
         $response = $router->__invoke($this->request('/foo', 'POST'), new Response, $this->next());
-        $this->assertEquals('Hello', $response->getBody()->__toString());
-        try {
-            // Do not match anything else
-            $router->__invoke($this->request('/foo'), new Response, $this->next());
-            $this->fail('Exception not triggered');
-        } catch (HttpMethodNotAllowed $e) {
-            $this->assertEquals('HTTP method not allowed, allowed methods: POST', $e->getMessage());
-        }
+        $this->assertEquals('Hello', $response->getBody()->getContents());
+        // Do not match anything else
+        $response = $router->__invoke($this->request('/foo'), new Response, $next);
+        $this->assertEquals('Not found', $response->getBody()->getContents());
 
         // Multiple methods
         $response = $router->__invoke($this->request('/bar', 'POST'), new Response, $this->next());
-        $this->assertEquals('Hello', $response->getBody()->__toString());
+        $this->assertEquals('Hello', $response->getBody()->getContents());
         $response = $router->__invoke($this->request('/bar', 'PUT'), new Response, $this->next());
-        $this->assertEquals('Hello', $response->getBody()->__toString());
-        try {
-            // Do not match anything else
-            $router->__invoke($this->request('/bar'), new Response, $this->next());
-            $this->fail('Exception not triggered');
-        } catch (HttpMethodNotAllowed $e) {
-            $this->assertEquals('HTTP method not allowed, allowed methods: POST, PUT', $e->getMessage());
-        }
+        $this->assertEquals('Hello', $response->getBody()->getContents());
+        // Do not match anything else
+        $response = $router->__invoke($this->request('/bar'), new Response, $next);
+        $this->assertEquals('Not found', $response->getBody()->getContents());
     }
 
     private function request($uri, $method = 'GET')

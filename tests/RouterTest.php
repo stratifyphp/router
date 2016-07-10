@@ -5,11 +5,10 @@ namespace Stratify\Router\Test;
 use Interop\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Stratify\Http\Exception\HttpMethodNotAllowed;
-use Stratify\Http\Middleware\Invoker\MiddlewareInvoker;
 use Stratify\Router\Router;
 use Zend\Diactoros\Response;
 use Zend\Diactoros\Response\HtmlResponse;
+use Zend\Diactoros\Response\TextResponse;
 use Zend\Diactoros\ServerRequest;
 use function Stratify\Router\resource;
 use function Stratify\Router\route;
@@ -46,6 +45,23 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
         $router = new Router([]);
         $response = $router->__invoke($this->request('/'), new Response, $next);
+
+        $this->assertEquals('Hello world!', $response->getBody()->__toString());
+    }
+
+    /**
+     * @test
+     */
+    public function calls_next_middleware_if_route_method_did_not_match()
+    {
+        $next = function () {
+            return new TextResponse('Hello world!');
+        };
+
+        $router = new Router([
+            '/' => 'foo', // only allows GET by default
+        ]);
+        $response = $router->__invoke($this->request('/', 'POST'), new Response, $next);
 
         $this->assertEquals('Hello world!', $response->getBody()->__toString());
     }
@@ -121,23 +137,23 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     public function routes_match_http_get_by_default_only()
     {
         $router = new Router([
-            '/' => function ($request, ResponseInterface $response, $next) {
-                $response->getBody()->write('Hello world!');
-                return $response;
+            '/' => function () {
+                return new TextResponse('Hello world!');
             },
         ]);
 
         // Match GET
         $response = $router->__invoke($this->request('/', 'GET'), new Response, $this->next());
         $this->assertEquals('Hello world!', $response->getBody()->__toString());
+
         // Don't match any other HTTP method
         $methods = ['POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS', 'TRACE'];
+        $next = function () {
+            return new TextResponse('Not found');
+        };
         foreach ($methods as $method) {
-            try {
-                $router->__invoke($this->request('/', $method), new Response, $this->next());
-                $this->fail('Expected exception HttpMethodNotAllowed');
-            } catch (HttpMethodNotAllowed $e) {
-            }
+            $response = $router->__invoke($this->request('/', $method), new Response, $next);
+            $this->assertEquals('Not found', $response->getBody()->getContents());
         }
     }
 

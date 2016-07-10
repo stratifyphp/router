@@ -5,7 +5,6 @@ namespace Stratify\Router;
 use Aura\Router\Route;
 use Aura\Router\RouterContainer;
 use Interop\Container\ContainerInterface;
-use Stratify\Http\Exception\HttpMethodNotAllowed;
 use Stratify\Http\Exception\HttpNotFound;
 use Stratify\Http\Middleware\Invoker\MiddlewareInvoker;
 use Stratify\Http\Middleware\Middleware;
@@ -63,18 +62,6 @@ class Router implements Middleware
         $route = $matcher->match($request);
 
         if ($route === false) {
-            $failedRoute = $matcher->getFailedRoute();
-
-            if ($failedRoute) {
-                // which matching rule failed?
-                switch ($failedRoute->failedRule) {
-                    case \Aura\Router\Rule\Allows::class:
-                        // 405 Method not allowed
-                        throw new HttpMethodNotAllowed($failedRoute->allows);
-                        break;
-                }
-            }
-
             // Call the next middleware
             return $next($request, $response);
         }
