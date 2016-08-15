@@ -6,7 +6,6 @@ use Aura\Router\Route;
 use Aura\Router\RouterContainer;
 use Interop\Container\ContainerInterface;
 use Stratify\Http\Exception\HttpNotFound;
-use Stratify\Http\Middleware\HasSubMiddlewares;
 use Stratify\Http\Middleware\Invoker\MiddlewareInvoker;
 use Stratify\Http\Middleware\Middleware;
 use Stratify\Router\Invoker\ControllerInvoker;
@@ -25,7 +24,7 @@ use Psr\Http\Message\ServerRequestInterface;
  *
  * @author Matthieu Napoli <matthieu@mnapoli.fr>
  */
-class Router implements Middleware, HasSubMiddlewares
+class Router implements Middleware
 {
     /**
      * @var MiddlewareInvoker
@@ -42,16 +41,10 @@ class Router implements Middleware, HasSubMiddlewares
      */
     private $urlGenerator;
 
-    /**
-     * @var array
-     */
-    private $routes;
-
     public function __construct(array $routes, ContainerInterface $container = null)
     {
         $this->invoker = new ControllerInvoker($container);
         $this->routerContainer = new RouterContainer;
-        $this->routes = $routes;
         $this->addRoutes($routes);
     }
 
@@ -87,11 +80,6 @@ class Router implements Middleware, HasSubMiddlewares
         }
 
         return $this->urlGenerator;
-    }
-
-    public function getSubMiddlewares() : array
-    {
-        return array_values($this->routes);
     }
 
     private function dispatch(

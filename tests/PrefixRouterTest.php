@@ -95,19 +95,6 @@ class PrefixRouterTest extends \PHPUnit_Framework_TestCase
         $router->__invoke($this->request('/api/test'), new Response, $this->next());
     }
 
-    /**
-     * @test
-     */
-    public function exposes_sub_middlewares()
-    {
-        $router = new PrefixRouter([
-            '/foo' => 'foo',
-            '/bar' => 'bar',
-        ]);
-
-        $this->assertEquals(['foo', 'bar'], $router->getSubMiddlewares());
-    }
-
     private function request($uri)
     {
         return new ServerRequest([], [], $uri, 'GET');

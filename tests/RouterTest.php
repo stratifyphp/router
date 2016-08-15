@@ -213,19 +213,6 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('Hello world!', $response->getBody()->__toString());
     }
 
-    /**
-     * @test
-     */
-    public function exposes_sub_middlewares()
-    {
-        $router = new Router([
-            '/foo' => 'foo',
-            '/bar' => 'bar',
-        ]);
-
-        $this->assertEquals(['foo', 'bar'], $router->getSubMiddlewares());
-    }
-
     private function request($uri, $method = 'GET')
     {
         return new ServerRequest([], [], $uri, $method);
