@@ -4,6 +4,7 @@ namespace Stratify\Router;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Stratify\Http\Middleware\HasSubMiddlewares;
 use Stratify\Http\Middleware\Invoker\MiddlewareInvoker;
 use Stratify\Http\Middleware\Invoker\SimpleInvoker;
 use Stratify\Http\Middleware\Middleware;
@@ -13,7 +14,7 @@ use Stratify\Http\Middleware\Middleware;
  *
  * @author Matthieu Napoli <matthieu@mnapoli.fr>
  */
-class PrefixRouter implements Middleware
+class PrefixRouter implements Middleware, HasSubMiddlewares
 {
     /**
      * @var array[]
@@ -46,5 +47,10 @@ class PrefixRouter implements Middleware
         }
 
         return $next($request, $response);
+    }
+
+    public function getSubMiddlewares() : array
+    {
+        return array_values($this->routes);
     }
 }
