@@ -2,10 +2,9 @@
 
 namespace Stratify\Router\Test;
 
+use Stratify\Http\Response\SimpleResponse;
 use Stratify\Router\RestRouter;
 use Stratify\Router\Test\Mock\FakeRestController;
-use Zend\Diactoros\Response;
-use Zend\Diactoros\Response\HtmlResponse;
 use Zend\Diactoros\ServerRequest;
 
 class RestRouterTest extends \PHPUnit_Framework_TestCase
@@ -18,7 +17,7 @@ class RestRouterTest extends \PHPUnit_Framework_TestCase
         $router = new RestRouter([
             '/item' => FakeRestController::class,
         ]);
-        $response = $router->__invoke($this->request('/item'), new Response, $this->next());
+        $response = $router->__invoke($this->request('/item'), $this->next());
 
         $this->assertEquals('Index', $response->getBody()->__toString());
     }
@@ -31,7 +30,7 @@ class RestRouterTest extends \PHPUnit_Framework_TestCase
         $router = new RestRouter([
             '/item' => FakeRestController::class,
         ]);
-        $response = $router->__invoke($this->request('/item', 'POST'), new Response, $this->next());
+        $response = $router->__invoke($this->request('/item', 'POST'), $this->next());
 
         $this->assertEquals('Post', $response->getBody()->__toString());
     }
@@ -44,7 +43,7 @@ class RestRouterTest extends \PHPUnit_Framework_TestCase
         $router = new RestRouter([
             '/item' => FakeRestController::class,
         ]);
-        $response = $router->__invoke($this->request('/item/123'), new Response, $this->next());
+        $response = $router->__invoke($this->request('/item/123'), $this->next());
 
         $this->assertEquals('GET 123', $response->getBody()->__toString());
     }
@@ -57,7 +56,7 @@ class RestRouterTest extends \PHPUnit_Framework_TestCase
         $router = new RestRouter([
             '/item' => FakeRestController::class,
         ]);
-        $response = $router->__invoke($this->request('/item/123', 'PUT'), new Response, $this->next());
+        $response = $router->__invoke($this->request('/item/123', 'PUT'), $this->next());
 
         $this->assertEquals('PUT 123', $response->getBody()->__toString());
     }
@@ -70,7 +69,7 @@ class RestRouterTest extends \PHPUnit_Framework_TestCase
         $router = new RestRouter([
             '/item' => FakeRestController::class,
         ]);
-        $response = $router->__invoke($this->request('/item/123', 'DELETE'), new Response, $this->next());
+        $response = $router->__invoke($this->request('/item/123', 'DELETE'), $this->next());
 
         $this->assertEquals('DELETE 123', $response->getBody()->__toString());
     }
@@ -81,8 +80,8 @@ class RestRouterTest extends \PHPUnit_Framework_TestCase
     public function calls_next_middleware_if_no_route_matched()
     {
         $router = new RestRouter([]);
-        $response = $router->__invoke($this->request('/'), new Response, function () {
-            return new HtmlResponse('Hello world!');
+        $response = $router->__invoke($this->request('/'), function () {
+            return new SimpleResponse('Hello world!');
         });
 
         $this->assertEquals('Hello world!', $response->getBody()->__toString());

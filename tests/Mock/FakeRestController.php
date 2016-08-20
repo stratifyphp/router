@@ -2,9 +2,8 @@
 
 namespace Stratify\Router\Test\Mock;
 
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Zend\Diactoros\Response\HtmlResponse;
+use Stratify\Http\Response\SimpleResponse;
 
 /**
  * We have to use static functions because the "SimpleInvoker" doesn't do auto-instantiation
@@ -12,28 +11,28 @@ use Zend\Diactoros\Response\HtmlResponse;
  */
 class FakeRestController
 {
-    public static function index(ServerRequestInterface $request, ResponseInterface $response, callable $next)
+    public static function index(ServerRequestInterface $request, callable $next)
     {
-        return new HtmlResponse('Index');
+        return new SimpleResponse('Index');
     }
 
-    public static function post(ServerRequestInterface $request, ResponseInterface $response, callable $next)
+    public static function post(ServerRequestInterface $request, callable $next)
     {
-        return new HtmlResponse('Post');
+        return new SimpleResponse('Post');
     }
 
-    public static function get(ServerRequestInterface $request, ResponseInterface $response, callable $next)
+    public static function get(ServerRequestInterface $request, callable $next)
     {
-        return new HtmlResponse('GET '.$request->getAttribute('id'));
+        return new SimpleResponse('GET '.$request->getAttribute('id'));
     }
 
-    public static function put(ServerRequestInterface $request, ResponseInterface $response, callable $next)
+    public static function put(ServerRequestInterface $request, callable $next)
     {
-        return new HtmlResponse('PUT '.$request->getAttribute('id'));
+        return new SimpleResponse('PUT '.$request->getAttribute('id'));
     }
 
-    public static function delete(ServerRequestInterface $request, ResponseInterface $response, callable $next)
+    public static function delete(ServerRequestInterface $request, callable $next)
     {
-        return new HtmlResponse('DELETE '.$request->getAttribute('id'));
+        return new SimpleResponse('DELETE '.$request->getAttribute('id'));
     }
 }

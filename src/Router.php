@@ -51,11 +51,7 @@ class Router implements Middleware
     /**
      * Route the incoming request to its handler, or call the next middleware if no route was found.
      */
-    public function __invoke(
-        ServerRequestInterface $request,
-        ResponseInterface $response,
-        callable $next
-    ) : ResponseInterface
+    public function __invoke(ServerRequestInterface $request, callable $next) : ResponseInterface
     {
         $matcher = $this->routerContainer->getMatcher();
 
@@ -63,14 +59,14 @@ class Router implements Middleware
 
         if ($route === false) {
             // Call the next middleware
-            return $next($request, $response);
+            return $next($request);
         }
 
         foreach ($route->attributes as $key => $val) {
             $request = $request->withAttribute($key, $val);
         }
 
-        return $this->dispatch($route->handler, $request, $response);
+        return $this->dispatch($route->handler, $request);
     }
 
     public function getUrlGenerator() : UrlGenerator
@@ -82,31 +78,13 @@ class Router implements Middleware
         return $this->urlGenerator;
     }
 
-    private function dispatch(
-        $handler,
-        ServerRequestInterface $request,
-        ResponseInterface $response
-    ) : ResponseInterface
+    private function dispatch($handler, ServerRequestInterface $request) : ResponseInterface
     {
         $next = function () {
             throw new HttpNotFound;
         };
 
-        $newResponse = $this->invoker->invoke($handler, $request, $response, $next);
-
-        if (is_string($newResponse)) {
-            // Allow direct string response
-            $response->getBody()->write($newResponse);
-            $newResponse = $response;
-        } elseif (! $newResponse instanceof ResponseInterface) {
-            throw new \RuntimeException(sprintf(
-                'The controller did not return a response (expected %s, got %s)',
-                ResponseInterface::class,
-                is_object($newResponse) ? get_class($newResponse) : gettype($newResponse)
-            ));
-        }
-
-        return $newResponse;
+        return $this->invoker->invoke($handler, $request, $next);
     }
 
     private function addRoutes(array $routes)

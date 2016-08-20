@@ -31,20 +31,16 @@ class PrefixRouter implements Middleware
         $this->routes = $routes;
     }
 
-    public function __invoke(
-        ServerRequestInterface $request,
-        ResponseInterface $response,
-        callable $next
-    ) : ResponseInterface
+    public function __invoke(ServerRequestInterface $request, callable $next) : ResponseInterface
     {
         $path = $request->getUri()->getPath();
 
         foreach ($this->routes as $pathPrefix => $middleware) {
             if (substr($path, 0, strlen($pathPrefix)) === $pathPrefix) {
-                return $this->invoker->invoke($middleware, $request, $response, $next);
+                return $this->invoker->invoke($middleware, $request, $next);
             }
         }
 
-        return $next($request, $response);
+        return $next($request);
     }
 }

@@ -11,6 +11,7 @@ use Invoker\ParameterResolver\ResolverChain;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Stratify\Http\Middleware\Invoker\MiddlewareInvoker;
+use Zend\Diactoros\Response\HtmlResponse;
 
 /**
  * Invokes controllers with dependency injection features:
@@ -41,12 +42,7 @@ class ControllerInvoker implements MiddlewareInvoker
         $this->container = $container;
     }
 
-    public function invoke(
-        $middleware,
-        ServerRequestInterface $request,
-        ResponseInterface $response,
-        callable $next
-    ) : ResponseInterface
+    public function invoke($middleware, ServerRequestInterface $request, callable $next) : ResponseInterface
     {
         if (! $this->invoker) {
             $this->invoker = $this->createInvoker();
@@ -54,15 +50,13 @@ class ControllerInvoker implements MiddlewareInvoker
 
         $parameters = $request->getAttributes();
         $parameters['request'] = $request;
-        $parameters['response'] = $response;
         $parameters['next'] = $next;
 
         $newResponse = $this->invoker->call($middleware, $parameters);
 
         if (is_string($newResponse)) {
             // Allow direct string response
-            $response->getBody()->write($newResponse);
-            $newResponse = $response;
+            $newResponse = new HtmlResponse($newResponse);
         } elseif (! $newResponse instanceof ResponseInterface) {
             throw new \RuntimeException(sprintf(
                 'The controller did not return a response (expected %s, got %s)',

@@ -130,7 +130,6 @@ Controllers, aka "route handlers", can be any [PHP callables](http://php.net/man
 The callable can decide which parameters it will take. The router will detect what to provide based on the callable's parameters. Parameters can be:
 
 - the PSR-7 request: `ServerRequestInterface $request`; in that case the parameter *must be named `$request`*
-- the PSR-7 response: `ResponseInterface $response`; in that case the parameter *must be named `$response`*
 - any request attribute, this includes:
     - route placeholders: `/order/{orderId}` => you can have a `$orderId` parameter (parameter names must be identical to the route placeholder name)
     - or any attribute defined by a previous middleware (e.g. if an authentication middleware defines a `user` attribute, you can have a `$user` parametre)
@@ -139,7 +138,7 @@ The callable can decide which parameters it will take. The router will detect wh
 Since a controller/route handler *is* a middleware, it can also have the middleware signature:
 
 ```php
-function (ServerRequestInterface $request, ResponseInterface $response, callable $next) {
+function (ServerRequestInterface $request, callable $next) {
 }
 ```
 
@@ -147,7 +146,7 @@ function (ServerRequestInterface $request, ResponseInterface $response, callable
 
 Controllers, like middlewares, are expected to return PSR-7 response objects.
 
-However, in order to ease development, they can also return strings: those will be automatically turned into `200` HTTP responses.
+However, in order to ease development, they can also return strings: those will be automatically turned into `200` HTML responses.
 
 ```php
 function () {
@@ -155,9 +154,8 @@ function () {
 }
 
 // Same as
-function (ResponseInterface $response) {
-    $response->getBody()->write('Hello world!');
-    return $response;
+function () {
+    return new HtmlResponse('Hello world!');
 }
 ```
 
@@ -234,7 +232,7 @@ $router = new PrefixRouter([
 The first prefix to match is used. Each route handler must be a middleware, i.e. a callable whose signature matches:
 
 ```php
-function (ServerRequestInterface $request, ResponseInterface $response, callable $next) : ResponseInterface {
+function (ServerRequestInterface $request, callable $next) : ResponseInterface {
 }
 ```
 

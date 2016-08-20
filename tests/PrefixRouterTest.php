@@ -5,6 +5,7 @@ namespace Stratify\Router\Test;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Stratify\Http\Middleware\Invoker\MiddlewareInvoker;
+use Stratify\Http\Response\SimpleResponse;
 use Stratify\Router\PrefixRouter;
 use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequest;
@@ -17,19 +18,17 @@ class PrefixRouterTest extends \PHPUnit_Framework_TestCase
     public function routes_request_based_on_path_prefix()
     {
         $router = new PrefixRouter([
-            '/api'    => function (ServerRequestInterface $request, ResponseInterface $response) {
-                $response->getBody()->write('API');
-                return $response;
+            '/api' => function () {
+                return new SimpleResponse('API');
             },
-            '/admin' => function (ServerRequestInterface $request, ResponseInterface $response) {
-                $response->getBody()->write('Admin');
-                return $response;
+            '/admin' => function () {
+                return new SimpleResponse('Admin');
             },
         ]);
 
-        $response = $router->__invoke($this->request('/api/test'), new Response, $this->next());
+        $response = $router->__invoke($this->request('/api/test'), $this->next());
         $this->assertEquals('API', $response->getBody()->__toString());
-        $response = $router->__invoke($this->request('/admin'), new Response, $this->next());
+        $response = $router->__invoke($this->request('/admin'), $this->next());
         $this->assertEquals('Admin', $response->getBody()->__toString());
     }
 
@@ -39,19 +38,17 @@ class PrefixRouterTest extends \PHPUnit_Framework_TestCase
     public function takes_the_first_prefix_matching()
     {
         $router = new PrefixRouter([
-            '/api'    => function (ServerRequestInterface $request, ResponseInterface $response) {
-                $response->getBody()->write('API');
-                return $response;
+            '/api' => function () {
+                return new SimpleResponse('API');
             },
-            '/' => function (ServerRequestInterface $request, ResponseInterface $response) {
-                $response->getBody()->write('Root');
-                return $response;
+            '/' => function () {
+                return new SimpleResponse('Root');
             },
         ]);
 
-        $response = $router->__invoke($this->request('/api/test'), new Response, $this->next());
+        $response = $router->__invoke($this->request('/api/test'), $this->next());
         $this->assertEquals('API', $response->getBody()->__toString());
-        $response = $router->__invoke($this->request('/'), new Response, $this->next());
+        $response = $router->__invoke($this->request('/'), $this->next());
         $this->assertEquals('Root', $response->getBody()->__toString());
     }
 
@@ -60,18 +57,17 @@ class PrefixRouterTest extends \PHPUnit_Framework_TestCase
      */
     public function calls_next_middleware_if_no_route_matched()
     {
-        $next = function (ServerRequestInterface $request, ResponseInterface $response) {
-            $response->getBody()->write('Hello world!');
-            return $response;
+        $next = function () {
+            return new SimpleResponse('Hello world!');
         };
 
         $router = new PrefixRouter([
-            '/api'    => function (ServerRequestInterface $request, ResponseInterface $response) {
-                return $response;
+            '/api' => function () {
+                return new SimpleResponse('');
             },
         ]);
 
-        $response = $router->__invoke($this->request('/'), new Response, $next);
+        $response = $router->__invoke($this->request('/'), $next);
         $this->assertEquals('Hello world!', $response->getBody()->__toString());
     }
 
@@ -92,7 +88,7 @@ class PrefixRouterTest extends \PHPUnit_Framework_TestCase
             ->willReturn(new Response);
 
         $router = new PrefixRouter($routes, $invoker);
-        $router->__invoke($this->request('/api/test'), new Response, $this->next());
+        $router->__invoke($this->request('/api/test'), $this->next());
     }
 
     private function request($uri)

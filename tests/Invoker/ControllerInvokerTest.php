@@ -2,8 +2,8 @@
 
 namespace Stratify\Router\Test\Invoker;
 
+use Interop\Container\ContainerInterface;
 use Stratify\Router\Invoker\ControllerInvoker;
-use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequest;
 
 class ControllerInvokerTest extends \PHPUnit_Framework_TestCase
@@ -13,7 +13,7 @@ class ControllerInvokerTest extends \PHPUnit_Framework_TestCase
      */
     public function allows_controllers_to_return_string()
     {
-        $container = $this->getMockForAbstractClass('Interop\Container\ContainerInterface');
+        $container = $this->getMockForAbstractClass(ContainerInterface::class);
         $invoker = new ControllerInvoker($container);
 
         $middleware = function () {
@@ -21,11 +21,9 @@ class ControllerInvokerTest extends \PHPUnit_Framework_TestCase
         };
 
         $request = new ServerRequest([], [], '/', 'GET');
-        $response = new Response;
         $next = function () {};
-        $newResponse = $invoker->invoke($middleware, $request, $response, $next);
+        $response = $invoker->invoke($middleware, $request, $next);
 
-        $this->assertEquals('Hello world!', $newResponse->getBody()->__toString());
-        $this->assertSame($response, $newResponse);
+        $this->assertEquals('Hello world!', $response->getBody()->__toString());
     }
 }

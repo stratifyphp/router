@@ -25,15 +25,9 @@ class RestRouter implements Middleware
         $this->router = new Router($routes, $container);
     }
 
-    public function __invoke(
-        ServerRequestInterface $request,
-        ResponseInterface $response,
-        callable $next
-    ) : ResponseInterface
+    public function __invoke(ServerRequestInterface $request, callable $next) : ResponseInterface
     {
-        $router = $this->router;
-
-        return $router($request, $response, $next);
+        return ($this->router)($request, $next);
     }
 
     private function createRoutes(array $resources) : array
