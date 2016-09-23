@@ -36,7 +36,7 @@ class PrefixRouter implements Middleware
         $path = $request->getUri()->getPath();
 
         foreach ($this->routes as $pathPrefix => $middleware) {
-            if (substr($path, 0, strlen($pathPrefix)) === $pathPrefix) {
+            if (strpos($path, $pathPrefix) === 0) {
                 return $this->invoker->invoke($middleware, $request, $next);
             }
         }
