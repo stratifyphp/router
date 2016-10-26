@@ -40,4 +40,14 @@ class UrlGenerator
 
         return $url;
     }
+
+    public function has(string $routeName) : bool
+    {
+        try {
+            $this->generator->generate($routeName, []);
+        } catch (RouteNotFound $e) {
+            return false;
+        }
+        return true;
+    }
 }
