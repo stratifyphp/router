@@ -19,8 +19,8 @@
         "psr/http-message": "^1.0",
         "stratify/http": "~0.4.0",
         "aura/router": "^3.0",
-        "container-interop/container-interop": "^1.1",
-        "php-di/invoker": "^1.2"
+        "psr/container": "^1.0",
+        "php-di/invoker": "^2.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^5.1"

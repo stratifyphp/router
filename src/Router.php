@@ -4,7 +4,7 @@ namespace Stratify\Router;
 
 use Aura\Router\Route;
 use Aura\Router\RouterContainer;
-use Interop\Container\ContainerInterface;
+use Psr\Container\ContainerInterface;
 use Stratify\Http\Exception\HttpNotFound;
 use Stratify\Http\Middleware\Invoker\MiddlewareInvoker;
 use Stratify\Http\Middleware\Middleware;

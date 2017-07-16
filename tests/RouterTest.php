@@ -2,8 +2,7 @@
 
 namespace Stratify\Router\Test;
 
-use Interop\Container\ContainerInterface;
-use Psr\Http\Message\ResponseInterface;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Stratify\Http\Response\SimpleResponse;
 use Stratify\Router\Router;

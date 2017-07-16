@@ -2,7 +2,7 @@
 
 namespace Stratify\Router\Test\Invoker;
 
-use Interop\Container\ContainerInterface;
+use Psr\Container\ContainerInterface;
 use Stratify\Router\Invoker\ControllerInvoker;
 use Zend\Diactoros\ServerRequest;
 
