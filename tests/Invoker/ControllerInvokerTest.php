@@ -2,11 +2,13 @@
 
 namespace Stratify\Router\Test\Invoker;
 
+use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
+use Stratify\Http\Middleware\LastDelegate;
 use Stratify\Router\Invoker\ControllerInvoker;
 use Zend\Diactoros\ServerRequest;
 
-class ControllerInvokerTest extends \PHPUnit_Framework_TestCase
+class ControllerInvokerTest extends TestCase
 {
     /**
      * @test
@@ -21,8 +23,7 @@ class ControllerInvokerTest extends \PHPUnit_Framework_TestCase
         };
 
         $request = new ServerRequest([], [], '/', 'GET');
-        $next = function () {};
-        $response = $invoker->invoke($middleware, $request, $next);
+        $response = $invoker->invoke($middleware, $request, new LastDelegate);
 
         $this->assertEquals('Hello world!', $response->getBody()->__toString());
     }

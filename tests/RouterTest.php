@@ -2,8 +2,11 @@
 
 namespace Stratify\Router\Test;
 
+use Interop\Http\ServerMiddleware\DelegateInterface;
+use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Stratify\Http\Middleware\LastDelegate;
 use Stratify\Http\Response\SimpleResponse;
 use Stratify\Router\Router;
 use Zend\Diactoros\Response;
@@ -11,7 +14,7 @@ use Zend\Diactoros\ServerRequest;
 use function Stratify\Router\resource;
 use function Stratify\Router\route;
 
-class RouterTest extends \PHPUnit_Framework_TestCase
+class RouterTest extends TestCase
 {
     /**
      * @test
@@ -26,7 +29,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             },
         ]);
 
-        $router->__invoke($this->request('/'), $this->next());
+        $router->process($this->request('/'), new LastDelegate);
 
         $this->assertEquals(1, $calls);
     }
@@ -36,12 +39,14 @@ class RouterTest extends \PHPUnit_Framework_TestCase
      */
     public function calls_next_middleware_if_no_route_matched()
     {
-        $next = function () {
-            return new SimpleResponse('Hello world!');
+        $next = new class() implements DelegateInterface {
+            public function process(ServerRequestInterface $request) {
+                return new SimpleResponse('Hello world!');
+            }
         };
 
         $router = new Router([]);
-        $response = $router->__invoke($this->request('/'), $next);
+        $response = $router->process($this->request('/'), $next);
 
         $this->assertEquals('Hello world!', $response->getBody()->__toString());
     }
@@ -51,14 +56,16 @@ class RouterTest extends \PHPUnit_Framework_TestCase
      */
     public function calls_next_middleware_if_route_method_did_not_match()
     {
-        $next = function () {
-            return new SimpleResponse('Hello world!');
+        $next = new class() implements DelegateInterface {
+            public function process(ServerRequestInterface $request) {
+                return new SimpleResponse('Hello world!');
+            }
         };
 
         $router = new Router([
             '/' => 'foo', // only allows GET by default
         ]);
-        $response = $router->__invoke($this->request('/', 'POST'), $next);
+        $response = $router->process($this->request('/', 'POST'), $next);
 
         $this->assertEquals('Hello world!', $response->getBody()->__toString());
     }
@@ -69,12 +76,12 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     public function calls_controller_with_middleware_parameters()
     {
         $router = new Router([
-            '/' => route(function (ServerRequestInterface $request, callable $next) {
+            '/' => route(function (ServerRequestInterface $request, DelegateInterface $delegate) {
                 return new SimpleResponse('Hello world!');
             }),
         ]);
 
-        $response = $router->__invoke($this->request('/'), $this->next());
+        $response = $router->process($this->request('/'), new LastDelegate);
 
         $this->assertEquals('Hello world!', $response->getBody()->__toString());
     }
@@ -98,7 +105,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             });
 
         $router = new Router($routes, $container);
-        $response = $router->__invoke($this->request('/'), $this->next());
+        $response = $router->process($this->request('/'), new LastDelegate);
         $this->assertEquals('Hello world!', $response->getBody()->__toString());
     }
 
@@ -121,7 +128,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             });
 
         $router = new Router($routes, $container);
-        $response = $router->__invoke($this->request('/'), $this->next());
+        $response = $router->process($this->request('/'), new LastDelegate);
         $this->assertEquals('Hello world!', $response->getBody()->__toString());
     }
 
@@ -137,16 +144,18 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         ]);
 
         // Match GET
-        $response = $router->__invoke($this->request('/', 'GET'), $this->next());
+        $response = $router->process($this->request('/', 'GET'), new LastDelegate);
         $this->assertEquals('Hello world!', $response->getBody()->__toString());
 
         // Don't match any other HTTP method
         $methods = ['POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS', 'TRACE'];
-        $next = function () {
-            return new SimpleResponse('Not found');
+        $next = new class() implements DelegateInterface {
+            public function process(ServerRequestInterface $request) {
+                return new SimpleResponse('Not found');
+            }
         };
         foreach ($methods as $method) {
-            $response = $router->__invoke($this->request('/', $method), $next);
+            $response = $router->process($this->request('/', $method), $next);
             $this->assertEquals('Not found', $response->getBody()->__toString());
         }
     }
@@ -167,10 +176,10 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             ]),
         ]);
 
-        $response = $router->__invoke($this->request('/', 'GET'), $this->next());
+        $response = $router->process($this->request('/', 'GET'), new LastDelegate);
         $this->assertEquals('GET', $response->getBody()->__toString());
 
-        $response = $router->__invoke($this->request('/', 'POST'), $this->next());
+        $response = $router->process($this->request('/', 'POST'), new LastDelegate);
         $this->assertEquals('POST', $response->getBody()->__toString());
     }
 
@@ -181,13 +190,13 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     {
         $router = new Router([
             '/' => new class {
-                public function __invoke(ServerRequestInterface $request, callable $next) {
+                public function __invoke(ServerRequestInterface $request, DelegateInterface $delegate) {
                     return new SimpleResponse('Hello world!');
                 }
             },
         ]);
 
-        $response = $router->__invoke($this->request('/'), $this->next());
+        $response = $router->process($this->request('/'), new LastDelegate);
         $this->assertEquals('Hello world!', $response->getBody()->__toString());
     }
 
@@ -202,7 +211,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             },
         ]);
 
-        $response = $router->__invoke($this->request('/'), $this->next());
+        $response = $router->process($this->request('/'), new LastDelegate);
         $this->assertEquals('Hello world!', $response->getBody()->__toString());
     }
 

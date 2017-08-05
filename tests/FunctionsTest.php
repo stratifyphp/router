@@ -2,10 +2,11 @@
 
 namespace Stratify\Router\Test;
 
+use PHPUnit\Framework\TestCase;
 use function Stratify\Router\resource;
 use function Stratify\Router\route;
 
-class FunctionsTest extends \PHPUnit_Framework_TestCase
+class FunctionsTest extends TestCase
 {
     /**
      * @test
@@ -14,6 +15,8 @@ class FunctionsTest extends \PHPUnit_Framework_TestCase
     {
         require __DIR__ . '/../src/functions.php';
         require __DIR__ . '/../src/functions.php';
+
+        self::assertTrue(true);
     }
 
     /**

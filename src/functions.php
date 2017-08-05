@@ -2,6 +2,7 @@
 
 namespace Stratify\Router;
 
+use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Stratify\Router\Route\RouteBuilder;
 
 if (! function_exists('Stratify\Router\route')) {
@@ -9,7 +10,7 @@ if (! function_exists('Stratify\Router\route')) {
     /**
      * Create a route.
      *
-     * @param callable|array|string $controller
+     * @param MiddlewareInterface|callable|array|string $controller
      */
     function route($controller, string $name = null) : RouteBuilder
     {

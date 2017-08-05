@@ -2,13 +2,17 @@
 
 namespace Stratify\Router\Test\Route;
 
+use Interop\Http\ServerMiddleware\DelegateInterface;
+use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
+use Stratify\Http\Exception\HttpNotFound;
+use Stratify\Http\Middleware\LastDelegate;
 use Stratify\Http\Response\SimpleResponse;
 use Stratify\Router\Router;
 use Zend\Diactoros\ServerRequest;
 use function Stratify\Router\route;
 
-class RouteBuilderTest extends \PHPUnit_Framework_TestCase
+class RouteBuilderTest extends TestCase
 {
     /**
      * @test
@@ -24,14 +28,12 @@ class RouteBuilderTest extends \PHPUnit_Framework_TestCase
         $router = new Router($routes);
 
         // Match number
-        $response = $router->__invoke($this->request('/9'), $this->next());
+        $response = $router->process($this->request('/9'), new LastDelegate);
         $this->assertEquals('Number 9', $response->getBody()->__toString());
 
         // Do not match anything else
-        $response = $router->__invoke($this->request('/hello'), function () {
-            return new SimpleResponse('Not found');
-        });
-        $this->assertEquals('Not found', $response->getBody()->__toString());
+        $this->expectException(HttpNotFound::class);
+        $router->process($this->request('/hello'), new LastDelegate);
     }
 
     /**
@@ -48,11 +50,11 @@ class RouteBuilderTest extends \PHPUnit_Framework_TestCase
         $router = new Router($routes);
 
         // Default value
-        $response = $router->__invoke($this->request('/'), $this->next());
+        $response = $router->process($this->request('/'), new LastDelegate);
         $this->assertEquals('Hello bar', $response->getBody()->__toString());
 
         // Request value
-        $response = $router->__invoke($this->request('/john'), $this->next());
+        $response = $router->process($this->request('/john'), new LastDelegate);
         $this->assertEquals('Hello john', $response->getBody()->__toString());
     }
 
@@ -73,36 +75,31 @@ class RouteBuilderTest extends \PHPUnit_Framework_TestCase
         ];
 
         $router = new Router($routes);
-        $next = function () {
-            return new SimpleResponse('Not found');
+        $notFoundDelegate = new class() implements DelegateInterface {
+            public function process(ServerRequestInterface $request) {
+                return new SimpleResponse('Not found');
+            }
         };
 
         // Single method
-        $response = $router->__invoke($this->request('/foo', 'POST'), $this->next());
+        $response = $router->process($this->request('/foo', 'POST'), new LastDelegate);
         $this->assertEquals('Hello', $response->getBody()->__toString());
         // Do not match anything else
-        $response = $router->__invoke($this->request('/foo'), $next);
+        $response = $router->process($this->request('/foo'), $notFoundDelegate);
         $this->assertEquals('Not found', $response->getBody()->__toString());
 
         // Multiple methods
-        $response = $router->__invoke($this->request('/bar', 'POST'), $this->next());
+        $response = $router->process($this->request('/bar', 'POST'), new LastDelegate);
         $this->assertEquals('Hello', $response->getBody()->__toString());
-        $response = $router->__invoke($this->request('/bar', 'PUT'), $this->next());
+        $response = $router->process($this->request('/bar', 'PUT'), new LastDelegate);
         $this->assertEquals('Hello', $response->getBody()->__toString());
         // Do not match anything else
-        $response = $router->__invoke($this->request('/bar'), $next);
+        $response = $router->process($this->request('/bar'), $notFoundDelegate);
         $this->assertEquals('Not found', $response->getBody()->__toString());
     }
 
     private function request($uri, $method = 'GET')
     {
         return new ServerRequest([], [], $uri, $method);
-    }
-
-    private function next()
-    {
-        return function () {
-            throw new \Exception('No route matched');
-        };
     }
 }

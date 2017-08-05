@@ -4,10 +4,11 @@ namespace Stratify\Router;
 
 use Aura\Router\Route;
 use Aura\Router\RouterContainer;
+use Interop\Http\ServerMiddleware\DelegateInterface;
+use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Psr\Container\ContainerInterface;
-use Stratify\Http\Exception\HttpNotFound;
 use Stratify\Http\Middleware\Invoker\MiddlewareInvoker;
-use Stratify\Http\Middleware\Middleware;
+use Stratify\Http\Middleware\LastDelegate;
 use Stratify\Router\Invoker\ControllerInvoker;
 use Stratify\Router\Route\RouteBuilder;
 use Psr\Http\Message\ResponseInterface;
@@ -24,7 +25,7 @@ use Psr\Http\Message\ServerRequestInterface;
  *
  * @author Matthieu Napoli <matthieu@mnapoli.fr>
  */
-class Router implements Middleware
+class Router implements MiddlewareInterface
 {
     /**
      * @var MiddlewareInvoker
@@ -51,7 +52,7 @@ class Router implements Middleware
     /**
      * Route the incoming request to its handler, or call the next middleware if no route was found.
      */
-    public function __invoke(ServerRequestInterface $request, callable $next) : ResponseInterface
+    public function process(ServerRequestInterface $request, DelegateInterface $delegate) : ResponseInterface
     {
         $matcher = $this->routerContainer->getMatcher();
 
@@ -59,7 +60,7 @@ class Router implements Middleware
 
         if ($route === false) {
             // Call the next middleware
-            return $next($request);
+            return $delegate->process($request);
         }
 
         foreach ($route->attributes as $key => $val) {
@@ -80,14 +81,10 @@ class Router implements Middleware
 
     private function dispatch($handler, ServerRequestInterface $request) : ResponseInterface
     {
-        $next = function () {
-            throw new HttpNotFound;
-        };
-
-        return $this->invoker->invoke($handler, $request, $next);
+        return $this->invoker->invoke($handler, $request, new LastDelegate);
     }
 
-    private function addRoutes(array $routes)
+    private function addRoutes(array $routes) : void
     {
         $map = $this->routerContainer->getMap();
 

@@ -2,6 +2,7 @@
 
 namespace Stratify\Router\Invoker;
 
+use Interop\Http\ServerMiddleware\DelegateInterface;
 use Invoker\Invoker;
 use Invoker\InvokerInterface;
 use Invoker\ParameterResolver\AssociativeArrayResolver;
@@ -42,15 +43,18 @@ class ControllerInvoker implements MiddlewareInvoker
         $this->container = $container;
     }
 
-    public function invoke($middleware, ServerRequestInterface $request, callable $next) : ResponseInterface
-    {
+    public function invoke(
+        $middleware,
+        ServerRequestInterface $request,
+        DelegateInterface $delegate
+    ) : ResponseInterface {
         if (! $this->invoker) {
             $this->invoker = $this->createInvoker();
         }
 
         $parameters = $request->getAttributes();
         $parameters['request'] = $request;
-        $parameters['next'] = $next;
+        $parameters['delegate'] = $delegate;
 
         $newResponse = $this->invoker->call($middleware, $parameters);
 

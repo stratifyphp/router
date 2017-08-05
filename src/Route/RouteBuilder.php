@@ -21,7 +21,7 @@ class RouteBuilder
         $this->routes = $routes;
     }
 
-    public static function singleRoute($controller, string $path = null, string $name = null)
+    public static function singleRoute($controller, string $path = null, string $name = null) : RouteBuilder
     {
         $route = new Route();
         $route->handler($controller);
@@ -35,7 +35,7 @@ class RouteBuilder
         return new static([$route]);
     }
 
-    public static function multipleRoutes(array $controllers)
+    public static function multipleRoutes(array $controllers) : RouteBuilder
     {
         $routes = [];
         foreach ($controllers as $method => $controller) {

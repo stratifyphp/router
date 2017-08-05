@@ -2,17 +2,18 @@
 
 namespace Stratify\Router;
 
+use Interop\Http\ServerMiddleware\DelegateInterface;
+use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Stratify\Http\Middleware\Middleware;
 
 /**
  * Routes requests in a REST fashion.
  *
  * @author Matthieu Napoli <matthieu@mnapoli.fr>
  */
-class RestRouter implements Middleware
+class RestRouter implements MiddlewareInterface
 {
     /**
      * @var Router
@@ -25,9 +26,9 @@ class RestRouter implements Middleware
         $this->router = new Router($routes, $container);
     }
 
-    public function __invoke(ServerRequestInterface $request, callable $next) : ResponseInterface
+    public function process(ServerRequestInterface $request, DelegateInterface $delegate) : ResponseInterface
     {
-        return ($this->router)($request, $next);
+        return $this->router->process($request, $delegate);
     }
 
     private function createRoutes(array $resources) : array

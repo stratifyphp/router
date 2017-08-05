@@ -2,15 +2,17 @@
 
 namespace Stratify\Router\Test;
 
-use Psr\Http\Message\ResponseInterface;
+use Interop\Http\ServerMiddleware\DelegateInterface;
+use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 use Stratify\Http\Middleware\Invoker\MiddlewareInvoker;
+use Stratify\Http\Middleware\LastDelegate;
 use Stratify\Http\Response\SimpleResponse;
 use Stratify\Router\PrefixRouter;
 use Zend\Diactoros\Response;
 use Zend\Diactoros\ServerRequest;
 
-class PrefixRouterTest extends \PHPUnit_Framework_TestCase
+class PrefixRouterTest extends TestCase
 {
     /**
      * @test
@@ -26,9 +28,9 @@ class PrefixRouterTest extends \PHPUnit_Framework_TestCase
             },
         ]);
 
-        $response = $router->__invoke($this->request('/api/test'), $this->next());
+        $response = $router->process($this->request('/api/test'), new LastDelegate);
         $this->assertEquals('API', $response->getBody()->__toString());
-        $response = $router->__invoke($this->request('/admin'), $this->next());
+        $response = $router->process($this->request('/admin'), new LastDelegate);
         $this->assertEquals('Admin', $response->getBody()->__toString());
     }
 
@@ -46,9 +48,9 @@ class PrefixRouterTest extends \PHPUnit_Framework_TestCase
             },
         ]);
 
-        $response = $router->__invoke($this->request('/api/test'), $this->next());
+        $response = $router->process($this->request('/api/test'), new LastDelegate);
         $this->assertEquals('API', $response->getBody()->__toString());
-        $response = $router->__invoke($this->request('/'), $this->next());
+        $response = $router->process($this->request('/'), new LastDelegate);
         $this->assertEquals('Root', $response->getBody()->__toString());
     }
 
@@ -57,8 +59,10 @@ class PrefixRouterTest extends \PHPUnit_Framework_TestCase
      */
     public function calls_next_middleware_if_no_route_matched()
     {
-        $next = function () {
-            return new SimpleResponse('Hello world!');
+        $delegate = new class() implements DelegateInterface {
+            public function process(ServerRequestInterface $request) {
+                return new SimpleResponse('Hello world!');
+            }
         };
 
         $router = new PrefixRouter([
@@ -67,7 +71,7 @@ class PrefixRouterTest extends \PHPUnit_Framework_TestCase
             },
         ]);
 
-        $response = $router->__invoke($this->request('/'), $next);
+        $response = $router->process($this->request('/'), $delegate);
         $this->assertEquals('Hello world!', $response->getBody()->__toString());
     }
 
@@ -88,18 +92,11 @@ class PrefixRouterTest extends \PHPUnit_Framework_TestCase
             ->willReturn(new Response);
 
         $router = new PrefixRouter($routes, $invoker);
-        $router->__invoke($this->request('/api/test'), $this->next());
+        $router->process($this->request('/api/test'), new LastDelegate);
     }
 
     private function request($uri)
     {
         return new ServerRequest([], [], $uri, 'GET');
-    }
-
-    private function next()
-    {
-        return function () {
-            throw new \Exception('No route matched');
-        };
     }
 }
