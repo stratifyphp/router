@@ -3,6 +3,7 @@
 namespace Stratify\Router\Invoker;
 
 use Interop\Http\ServerMiddleware\DelegateInterface;
+use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Invoker\Invoker;
 use Invoker\InvokerInterface;
 use Invoker\ParameterResolver\AssociativeArrayResolver;
@@ -56,7 +57,13 @@ class ControllerInvoker implements MiddlewareInvoker
         $parameters['request'] = $request;
         $parameters['delegate'] = $delegate;
 
-        $newResponse = $this->invoker->call($middleware, $parameters);
+        if ($middleware instanceof MiddlewareInterface) {
+            $callable = [$middleware, 'process'];
+        } else {
+            $callable = $middleware;
+        }
+
+        $newResponse = $this->invoker->call($callable, $parameters);
 
         if (is_string($newResponse)) {
             // Allow direct string response

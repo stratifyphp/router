@@ -3,6 +3,7 @@
 namespace Stratify\Router\Test;
 
 use Interop\Http\ServerMiddleware\DelegateInterface;
+use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -191,6 +192,38 @@ class RouterTest extends TestCase
         $router = new Router([
             '/' => new class {
                 public function __invoke(ServerRequestInterface $request, DelegateInterface $delegate) {
+                    return new SimpleResponse('Hello world!');
+                }
+            },
+        ]);
+
+        $response = $router->process($this->request('/'), new LastDelegate);
+        $this->assertEquals('Hello world!', $response->getBody()->__toString());
+    }
+
+    /**
+     * @test
+     */
+    public function supports_closures_as_controllers()
+    {
+        $router = new Router([
+            '/' => function () {
+                return new SimpleResponse('Hello world!');
+            },
+        ]);
+
+        $response = $router->process($this->request('/'), new LastDelegate);
+        $this->assertEquals('Hello world!', $response->getBody()->__toString());
+    }
+
+    /**
+     * @test
+     */
+    public function supports_middlewares_as_controllers()
+    {
+        $router = new Router([
+            '/' => new class implements MiddlewareInterface {
+                public function process(ServerRequestInterface $request, DelegateInterface $delegate) {
                     return new SimpleResponse('Hello world!');
                 }
             },
